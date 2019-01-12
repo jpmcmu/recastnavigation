@@ -192,7 +192,7 @@ void ConvexVolumeTool::handleClick(const float* /*s*/, const float* p, bool shif
 				for (int i = 0; i < m_nhull; ++i)
 					rcVcopy(&verts[i*3], &m_pts[m_hull[i]*3]);
 					
-				float minh = FLT_MAX, maxh = 0;
+				float minh = DT_FLT_MAX, maxh = 0;
 				for (int i = 0; i < m_nhull; ++i)
 					minh = rcMin(minh, verts[i*3+1]);
 				minh -= m_boxDescent;
@@ -249,7 +249,7 @@ void ConvexVolumeTool::handleRender()
 	duDebugDraw& dd = m_sample->getDebugDraw();
 	
 	// Find height extent of the shape.
-	float minh = FLT_MAX, maxh = 0;
+	float minh = DT_FLT_MAX, maxh = 0;
 	for (int i = 0; i < m_npts; ++i)
 		minh = rcMin(minh, m_pts[i*3+1]);
 	minh -= m_boxDescent;

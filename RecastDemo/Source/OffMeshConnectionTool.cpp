@@ -89,7 +89,7 @@ void OffMeshConnectionTool::handleClick(const float* /*s*/, const float* p, bool
 	{
 		// Delete
 		// Find nearest link end-point
-		float nearestDist = FLT_MAX;
+		float nearestDist = DT_FLT_MAX;
 		int nearestIndex = -1;
 		const float* verts = geom->getOffMeshConnectionVerts();
 		for (int i = 0; i < geom->getOffMeshConnectionCount()*2; ++i)

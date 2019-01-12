@@ -19,6 +19,8 @@
 #ifndef DEBUGDRAW_H
 #define DEBUGDRAW_H
 
+#include "DetourMath.h"
+
 // Some math headers don't have PI defined.
 static const float DU_PI = 3.14159265f;
 
@@ -49,20 +51,54 @@ struct duDebugDraw
 	///  @param color [in] color of the verts.
 	virtual void vertex(const float* pos, unsigned int color) = 0;
 
+	void vertex(const dtFloat* pos, unsigned int color)
+	{
+		float p[3];
+		p[0] = (float) pos[0];
+		p[1] = (float) pos[1];
+		p[2] = (float) pos[2];
+
+		this->vertex(&p[0],color);
+	}
+
 	/// Submit a vertex
 	///  @param x,y,z [in] position of the verts.
 	///  @param color [in] color of the verts.
 	virtual void vertex(const float x, const float y, const float z, unsigned int color) = 0;
+	
+	void vertex(const dtFloat x, const dtFloat y, const dtFloat z, unsigned int color)
+	{
+		this->vertex((float)x,(float)y,(float)z,color);
+	}
 
 	/// Submit a vertex
 	///  @param pos [in] position of the verts.
 	///  @param color [in] color of the verts.
 	virtual void vertex(const float* pos, unsigned int color, const float* uv) = 0;
 	
+	void vertex(const dtFloat* pos, unsigned int color, const dtFloat* uv)
+	{
+		float p[3];
+		p[0] = (float) pos[0];
+		p[1] = (float) pos[1];
+		p[2] = (float) pos[2];
+
+		float u[0];
+		u[0] = (float) uv[0];
+		u[1] = (float) uv[1];
+
+		this->vertex(&p[0],color,&u[0]);
+	}
+	
 	/// Submit a vertex
 	///  @param x,y,z [in] position of the verts.
 	///  @param color [in] color of the verts.
 	virtual void vertex(const float x, const float y, const float z, unsigned int color, const float u, const float v) = 0;
+	
+	void vertex(const dtFloat x, const dtFloat y, const dtFloat z, unsigned int color, const dtFloat u, const dtFloat v)
+	{
+		this->vertex((float)x,(float)y,(float)z,color,(float)u,(float)v);
+	}
 	
 	/// End drawing primitives.
 	virtual void end() = 0;

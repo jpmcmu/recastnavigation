@@ -530,16 +530,16 @@ static bool walkContour(dtTileCacheLayer& layer, int x, int y, dtTempContour& co
 }	
 
 
-static float distancePtSeg(const int x, const int z,
+static dtFloat distancePtSeg(const int x, const int z,
 						   const int px, const int pz,
 						   const int qx, const int qz)
 {
-	float pqx = (float)(qx - px);
-	float pqz = (float)(qz - pz);
-	float dx = (float)(x - px);
-	float dz = (float)(z - pz);
-	float d = pqx*pqx + pqz*pqz;
-	float t = pqx*dx + pqz*dz;
+	dtFloat pqx = (dtFloat)(qx - px);
+	dtFloat pqz = (dtFloat)(qz - pz);
+	dtFloat dx = (dtFloat)(x - px);
+	dtFloat dz = (dtFloat)(z - pz);
+	dtFloat d = pqx*pqx + pqz*pqz;
+	dtFloat t = pqx*dx + pqz*dz;
 	if (d > 0)
 		t /= d;
 	if (t < 0)
@@ -553,7 +553,7 @@ static float distancePtSeg(const int x, const int z,
 	return dx*dx + dz*dz;
 }
 
-static void simplifyContour(dtTempContour& cont, const float maxError)
+static void simplifyContour(dtTempContour& cont, const dtFloat maxError)
 {
 	cont.npoly = 0;
 	
@@ -614,7 +614,7 @@ static void simplifyContour(dtTempContour& cont, const float maxError)
 		const int bz = (int)cont.verts[bi*4+2];
 		
 		// Find maximum deviation from the segment.
-		float maxd = 0;
+		dtFloat maxd = 0;
 		int maxi = -1;
 		int ci, cinc, endi;
 		
@@ -637,7 +637,7 @@ static void simplifyContour(dtTempContour& cont, const float maxError)
 		// Tessellate only outer edges or edges between areas.
 		while (ci != endi)
 		{
-			float d = distancePtSeg(cont.verts[ci*4+0], cont.verts[ci*4+2], ax, az, bx, bz);
+			dtFloat d = distancePtSeg(cont.verts[ci*4+0], cont.verts[ci*4+2], ax, az, bx, bz);
 			if (d > maxd)
 			{
 				maxd = d;
@@ -738,7 +738,7 @@ static unsigned char getCornerHeight(dtTileCacheLayer& layer,
 // TODO: move this somewhere else, once the layer meshing is done.
 dtStatus dtBuildTileCacheContours(dtTileCacheAlloc* alloc,
 								  dtTileCacheLayer& layer,
-								  const int walkableClimb, 	const float maxError,
+								  const int walkableClimb, 	const dtFloat maxError,
 								  dtTileCacheContourSet& lcset)
 {
 	dtAssert(alloc);
@@ -1947,25 +1947,25 @@ dtStatus dtBuildTileCachePolyMesh(dtTileCacheAlloc* alloc,
 	return DT_SUCCESS;
 }
 
-dtStatus dtMarkCylinderArea(dtTileCacheLayer& layer, const float* orig, const float cs, const float ch,
-							const float* pos, const float radius, const float height, const unsigned char areaId)
+dtStatus dtMarkCylinderArea(dtTileCacheLayer& layer, const dtFloat* orig, const dtFloat cs, const dtFloat ch,
+							const dtFloat* pos, const dtFloat radius, const dtFloat height, const unsigned char areaId)
 {
-	float bmin[3], bmax[3];
+	dtFloat bmin[3], bmax[3];
 	bmin[0] = pos[0] - radius;
 	bmin[1] = pos[1];
 	bmin[2] = pos[2] - radius;
 	bmax[0] = pos[0] + radius;
 	bmax[1] = pos[1] + height;
 	bmax[2] = pos[2] + radius;
-	const float r2 = dtSqr(radius/cs + 0.5f);
+	const dtFloat r2 = dtSqr(radius/cs + 0.5f);
 
 	const int w = (int)layer.header->width;
 	const int h = (int)layer.header->height;
-	const float ics = 1.0f/cs;
-	const float ich = 1.0f/ch;
+	const dtFloat ics = 1.0f/cs;
+	const dtFloat ich = 1.0f/ch;
 	
-	const float px = (pos[0]-orig[0])*ics;
-	const float pz = (pos[2]-orig[2])*ics;
+	const dtFloat px = (pos[0]-orig[0])*ics;
+	const dtFloat pz = (pos[2]-orig[2])*ics;
 	
 	int minx = (int)dtMathFloorf((bmin[0]-orig[0])*ics);
 	int miny = (int)dtMathFloorf((bmin[1]-orig[1])*ich);
@@ -1988,8 +1988,8 @@ dtStatus dtMarkCylinderArea(dtTileCacheLayer& layer, const float* orig, const fl
 	{
 		for (int x = minx; x <= maxx; ++x)
 		{
-			const float dx = (float)(x+0.5f) - px;
-			const float dz = (float)(z+0.5f) - pz;
+			const dtFloat dx = (dtFloat)(x+0.5f) - px;
+			const dtFloat dz = (dtFloat)(z+0.5f) - pz;
 			if (dx*dx + dz*dz > r2)
 				continue;
 			const int y = layer.heights[x+z*w];
@@ -2002,20 +2002,20 @@ dtStatus dtMarkCylinderArea(dtTileCacheLayer& layer, const float* orig, const fl
 	return DT_SUCCESS;
 }
 
-dtStatus dtMarkBoxArea(dtTileCacheLayer& layer, const float* orig, const float cs, const float ch,
-					   const float* bmin, const float* bmax, const unsigned char areaId)
+dtStatus dtMarkBoxArea(dtTileCacheLayer& layer, const dtFloat* orig, const dtFloat cs, const dtFloat ch,
+					   const dtFloat* bmin, const dtFloat* bmax, const unsigned char areaId)
 {
 	const int w = (int)layer.header->width;
 	const int h = (int)layer.header->height;
-	const float ics = 1.0f/cs;
-	const float ich = 1.0f/ch;
+	const dtFloat ics = 1.0f/cs;
+	const dtFloat ich = 1.0f/ch;
 
-	int minx = (int)floorf((bmin[0]-orig[0])*ics);
-	int miny = (int)floorf((bmin[1]-orig[1])*ich);
-	int minz = (int)floorf((bmin[2]-orig[2])*ics);
-	int maxx = (int)floorf((bmax[0]-orig[0])*ics);
-	int maxy = (int)floorf((bmax[1]-orig[1])*ich);
-	int maxz = (int)floorf((bmax[2]-orig[2])*ics);
+	int minx = (int)dtMathFloorf((bmin[0]-orig[0])*ics);
+	int miny = (int)dtMathFloorf((bmin[1]-orig[1])*ich);
+	int minz = (int)dtMathFloorf((bmin[2]-orig[2])*ics);
+	int maxx = (int)dtMathFloorf((bmax[0]-orig[0])*ics);
+	int maxy = (int)dtMathFloorf((bmax[1]-orig[1])*ich);
+	int maxz = (int)dtMathFloorf((bmax[2]-orig[2])*ics);
 	
 	if (maxx < 0) return DT_SUCCESS;
 	if (minx >= w) return DT_SUCCESS;
@@ -2041,24 +2041,24 @@ dtStatus dtMarkBoxArea(dtTileCacheLayer& layer, const float* orig, const float c
 	return DT_SUCCESS;
 }
 
-dtStatus dtMarkBoxArea(dtTileCacheLayer& layer, const float* orig, const float cs, const float ch,
-					   const float* center, const float* halfExtents, const float* rotAux, const unsigned char areaId)
+dtStatus dtMarkBoxArea(dtTileCacheLayer& layer, const dtFloat* orig, const dtFloat cs, const dtFloat ch,
+					   const dtFloat* center, const dtFloat* halfExtents, const dtFloat* rotAux, const unsigned char areaId)
 {
 	const int w = (int)layer.header->width;
 	const int h = (int)layer.header->height;
-	const float ics = 1.0f/cs;
-	const float ich = 1.0f/ch;
+	const dtFloat ics = 1.0f/cs;
+	const dtFloat ich = 1.0f/ch;
 
-	float cx = (center[0] - orig[0])*ics;
-	float cz = (center[2] - orig[2])*ics;
+	dtFloat cx = (center[0] - orig[0])*ics;
+	dtFloat cz = (center[2] - orig[2])*ics;
 	
-	float maxr = 1.41f*dtMax(halfExtents[0], halfExtents[2]);
-	int minx = (int)floorf(cx - maxr*ics);
-	int maxx = (int)floorf(cx + maxr*ics);
-	int minz = (int)floorf(cz - maxr*ics);
-	int maxz = (int)floorf(cz + maxr*ics);
-	int miny = (int)floorf((center[1]-halfExtents[1]-orig[1])*ich);
-	int maxy = (int)floorf((center[1]+halfExtents[1]-orig[1])*ich);
+	dtFloat maxr = 1.41f*dtMax(halfExtents[0], halfExtents[2]);
+	int minx = (int)dtMathFloorf(cx - maxr*ics);
+	int maxx = (int)dtMathFloorf(cx + maxr*ics);
+	int minz = (int)dtMathFloorf(cz - maxr*ics);
+	int maxz = (int)dtMathFloorf(cz + maxr*ics);
+	int miny = (int)dtMathFloorf((center[1]-halfExtents[1]-orig[1])*ich);
+	int maxy = (int)dtMathFloorf((center[1]+halfExtents[1]-orig[1])*ich);
 
 	if (maxx < 0) return DT_SUCCESS;
 	if (minx >= w) return DT_SUCCESS;
@@ -2070,19 +2070,19 @@ dtStatus dtMarkBoxArea(dtTileCacheLayer& layer, const float* orig, const float c
 	if (minz < 0) minz = 0;
 	if (maxz >= h) maxz = h-1;
 	
-	float xhalf = halfExtents[0]*ics + 0.5f;
-	float zhalf = halfExtents[2]*ics + 0.5f;
+	dtFloat xhalf = halfExtents[0]*ics + 0.5f;
+	dtFloat zhalf = halfExtents[2]*ics + 0.5f;
 
 	for (int z = minz; z <= maxz; ++z)
 	{
 		for (int x = minx; x <= maxx; ++x)
 		{			
-			float x2 = 2.0f*(float(x) - cx);
-			float z2 = 2.0f*(float(z) - cz);
-			float xrot = rotAux[1]*x2 + rotAux[0]*z2;
+			dtFloat x2 = 2.0f*(dtFloat(x) - cx);
+			dtFloat z2 = 2.0f*(dtFloat(z) - cz);
+			dtFloat xrot = rotAux[1]*x2 + rotAux[0]*z2;
 			if (xrot > xhalf || xrot < -xhalf)
 				continue;
-			float zrot = rotAux[1]*z2 - rotAux[0]*x2;
+			dtFloat zrot = rotAux[1]*z2 - rotAux[0]*x2;
 			if (zrot > zhalf || zrot < -zhalf)
 				continue;
 			const int y = layer.heights[x+z*w];

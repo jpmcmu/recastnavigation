@@ -351,7 +351,7 @@ dtStatus dtTileCache::removeTile(dtCompressedTileRef ref, unsigned char** data, 
 }
 
 
-dtStatus dtTileCache::addObstacle(const float* pos, const float radius, const float height, dtObstacleRef* result)
+dtStatus dtTileCache::addObstacle(const dtFloat* pos, const dtFloat radius, const dtFloat height, dtObstacleRef* result)
 {
 	if (m_nreqs >= MAX_REQUESTS)
 		return DT_FAILURE | DT_BUFFER_TOO_SMALL;
@@ -386,7 +386,7 @@ dtStatus dtTileCache::addObstacle(const float* pos, const float radius, const fl
 	return DT_SUCCESS;
 }
 
-dtStatus dtTileCache::addBoxObstacle(const float* bmin, const float* bmax, dtObstacleRef* result)
+dtStatus dtTileCache::addBoxObstacle(const dtFloat* bmin, const dtFloat* bmax, dtObstacleRef* result)
 {
 	if (m_nreqs >= MAX_REQUESTS)
 		return DT_FAILURE | DT_BUFFER_TOO_SMALL;
@@ -420,7 +420,7 @@ dtStatus dtTileCache::addBoxObstacle(const float* bmin, const float* bmax, dtObs
 	return DT_SUCCESS;
 }
 
-dtStatus dtTileCache::addBoxObstacle(const float* center, const float* halfExtents, const float yRadians, dtObstacleRef* result)
+dtStatus dtTileCache::addBoxObstacle(const dtFloat* center, const dtFloat* halfExtents, const dtFloat yRadians, dtObstacleRef* result)
 {
 	if (m_nreqs >= MAX_REQUESTS)
 		return DT_FAILURE | DT_BUFFER_TOO_SMALL;
@@ -443,8 +443,8 @@ dtStatus dtTileCache::addBoxObstacle(const float* center, const float* halfExten
 	dtVcopy(ob->orientedBox.center, center);
 	dtVcopy(ob->orientedBox.halfExtents, halfExtents);
 
-	float coshalf= cosf(0.5f*yRadians);
-	float sinhalf = sinf(-0.5f*yRadians);
+	dtFloat coshalf= dtMathCosf(0.5f*yRadians);
+	dtFloat sinhalf = dtMathSinf(-0.5f*yRadians);
 	ob->orientedBox.rotAux[0] = coshalf*sinhalf;
 	ob->orientedBox.rotAux[1] = coshalf*coshalf - 0.5f;
 
@@ -474,7 +474,7 @@ dtStatus dtTileCache::removeObstacle(const dtObstacleRef ref)
 	return DT_SUCCESS;
 }
 
-dtStatus dtTileCache::queryTiles(const float* bmin, const float* bmax,
+dtStatus dtTileCache::queryTiles(const dtFloat* bmin, const dtFloat* bmax,
 								 dtCompressedTileRef* results, int* resultCount, const int maxResults) const 
 {
 	const int MAX_TILES = 32;
@@ -482,8 +482,8 @@ dtStatus dtTileCache::queryTiles(const float* bmin, const float* bmax,
 	
 	int n = 0;
 	
-	const float tw = m_params.width * m_params.cs;
-	const float th = m_params.height * m_params.cs;
+	const dtFloat tw = m_params.width * m_params.cs;
+	const dtFloat th = m_params.height * m_params.cs;
 	const int tx0 = (int)dtMathFloorf((bmin[0]-m_params.orig[0]) / tw);
 	const int tx1 = (int)dtMathFloorf((bmax[0]-m_params.orig[0]) / tw);
 	const int ty0 = (int)dtMathFloorf((bmin[2]-m_params.orig[2]) / th);
@@ -498,7 +498,7 @@ dtStatus dtTileCache::queryTiles(const float* bmin, const float* bmax,
 			for (int i = 0; i < ntiles; ++i)
 			{
 				const dtCompressedTile* tile = &m_tiles[decodeTileIdTile(tiles[i])];
-				float tbmin[3], tbmax[3];
+				dtFloat tbmin[3], tbmax[3];
 				calcTightTileBounds(tile->header, tbmin, tbmax);
 				
 				if (dtOverlapBounds(bmin,bmax, tbmin,tbmax))
@@ -515,7 +515,7 @@ dtStatus dtTileCache::queryTiles(const float* bmin, const float* bmax,
 	return DT_SUCCESS;
 }
 
-dtStatus dtTileCache::update(const float /*dt*/, dtNavMesh* navmesh,
+dtStatus dtTileCache::update(const dtFloat /*dt*/, dtNavMesh* navmesh,
 							 bool* upToDate)
 {
 	if (m_nupdate == 0)
@@ -536,7 +536,7 @@ dtStatus dtTileCache::update(const float /*dt*/, dtNavMesh* navmesh,
 			if (req->action == REQUEST_ADD)
 			{
 				// Find touched tiles.
-				float bmin[3], bmax[3];
+				dtFloat bmin[3], bmax[3];
 				getObstacleBounds(ob, bmin, bmax);
 
 				int ntouched = 0;
@@ -776,9 +776,9 @@ dtStatus dtTileCache::buildNavMeshTile(const dtCompressedTileRef ref, dtNavMesh*
 	return DT_SUCCESS;
 }
 
-void dtTileCache::calcTightTileBounds(const dtTileCacheLayerHeader* header, float* bmin, float* bmax) const
+void dtTileCache::calcTightTileBounds(const dtTileCacheLayerHeader* header, dtFloat* bmin, dtFloat* bmax) const
 {
-	const float cs = m_params.cs;
+	const dtFloat cs = m_params.cs;
 	bmin[0] = header->bmin[0] + header->minx*cs;
 	bmin[1] = header->bmin[1];
 	bmin[2] = header->bmin[2] + header->miny*cs;
@@ -787,7 +787,7 @@ void dtTileCache::calcTightTileBounds(const dtTileCacheLayerHeader* header, floa
 	bmax[2] = header->bmin[2] + (header->maxy+1)*cs;
 }
 
-void dtTileCache::getObstacleBounds(const struct dtTileCacheObstacle* ob, float* bmin, float* bmax) const
+void dtTileCache::getObstacleBounds(const struct dtTileCacheObstacle* ob, dtFloat* bmin, dtFloat* bmax) const
 {
 	if (ob->type == DT_OBSTACLE_CYLINDER)
 	{
@@ -809,7 +809,7 @@ void dtTileCache::getObstacleBounds(const struct dtTileCacheObstacle* ob, float*
 	{
 		const dtObstacleOrientedBox &orientedBox = ob->orientedBox;
 
-		float maxr = 1.41f*dtMax(orientedBox.halfExtents[0], orientedBox.halfExtents[2]);
+		dtFloat maxr = 1.41f*dtMax(orientedBox.halfExtents[0], orientedBox.halfExtents[2]);
 		bmin[0] = orientedBox.center[0] - maxr;
 		bmax[0] = orientedBox.center[0] + maxr;
 		bmin[1] = orientedBox.center[1] - orientedBox.halfExtents[1];

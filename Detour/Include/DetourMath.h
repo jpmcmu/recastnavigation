@@ -8,13 +8,18 @@ Members in this module are wrappers around the standard math library
 #define DETOURMATH_H
 
 #include <math.h>
+#include "../../../../include/Common/cFixedPoint.h"
 
-inline float dtMathFabsf(float x) { return fabsf(x); }
-inline float dtMathSqrtf(float x) { return sqrtf(x); }
-inline float dtMathFloorf(float x) { return floorf(x); }
-inline float dtMathCeilf(float x) { return ceilf(x); }
-inline float dtMathCosf(float x) { return cosf(x); }
-inline float dtMathSinf(float x) { return sinf(x); }
-inline float dtMathAtan2f(float y, float x) { return atan2f(y, x); }
+#define DT_FLT_MAX 741455
+#define DT_FLT_EPSILON 1e-5 
+typedef fp64 dtFloat;
+
+inline dtFloat dtMathFabsf(dtFloat x) { return fabs(x); }
+inline dtFloat dtMathSqrtf(dtFloat x) { return sqrt(x); }
+inline dtFloat dtMathFloorf(dtFloat x) { return floor(x); }
+inline dtFloat dtMathCeilf(dtFloat x) { return ceil(x); }
+inline dtFloat dtMathCosf(dtFloat x) { return cos(x); }
+inline dtFloat dtMathSinf(dtFloat x) { return sin(x); }
+inline dtFloat dtMathAtan2f(dtFloat y, dtFloat x) { return atan2(y, x); }
 
 #endif
